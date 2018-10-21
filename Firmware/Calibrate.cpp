@@ -2,7 +2,7 @@
 
 extern const int maxPoles;
 
-const int calibPower = sin_range / 2 / 2;
+const int calibPower = sin_range;
 const int quadrantDiv = SENSOR_MAX / numQuadrants;
 	
 ConfigData* config = (ConfigData*)flashPageAddress;

@@ -49,34 +49,37 @@ void initPwm() {
 	
 	// GPIOA
 	
-	GPIOA->MODER |= (0x02 << GPIO_MODER_MODER7_Pos) |	// alternative function for pin A-7 (pwm channel 1, negative)
-					(0x02 << GPIO_MODER_MODER8_Pos) |	// alternative function for pin A-8 (pwm channel 1, positive)
+	GPIOA->MODER |= (0x02 << GPIO_MODER_MODER8_Pos) |	// alternative function for pin A-8 (pwm channel 1, positive)
 					(0x02 << GPIO_MODER_MODER9_Pos) |	// alternative function for pin A-9 (pwm channel 2, positive)
-				    (0x02 << GPIO_MODER_MODER10_Pos);	// alternative function for pin A-10 (pwm channel 3, positive)
+				    (0x02 << GPIO_MODER_MODER10_Pos) |	// alternative function for pin A-10 (pwm channel 3, positive)
+		
+					(0x01 << GPIO_MODER_MODER11_Pos);	// output for pin A-11 (overcurrent control)
 	
-	GPIOA->OSPEEDR |= GPIO_OSPEEDR_OSPEEDR7 |			// high speed for pin A-7 (pwm channel 1, negative)
-				      GPIO_OSPEEDR_OSPEEDR8 |			// high speed for pin A-8 (pwm channel 1, positive)
+	GPIOA->OSPEEDR |= GPIO_OSPEEDR_OSPEEDR8 |			// high speed for pin A-8 (pwm channel 1, positive)
 				      GPIO_OSPEEDR_OSPEEDR9 |			// high speed for pin A-9 (pwm channel 2, positive)
-		              GPIO_OSPEEDR_OSPEEDR10;			// high speed for pin A-10 (pwm channel 3, positive)
-	
-	GPIOA->AFR[0] |= (0x02 << GPIO_AFRL_AFSEL7_Pos);	// for pin A-7 alternative funciton 2
+		              GPIO_OSPEEDR_OSPEEDR10 |			// high speed for pin A-10 (pwm channel 3, positive)
+		
+					  (0x01 << GPIO_OSPEEDR_OSPEEDR11_Pos);	// medium speed for pin A-11 (overcurrent control)
 	
 	GPIOA->AFR[1] |= (0x02 << GPIO_AFRH_AFSEL8_Pos) |	// for pin A-8 alternative funciton 2
 					 (0x02 << GPIO_AFRH_AFSEL9_Pos) |	// for pin A-9 alternative funciton 2
 					 (0x02 << GPIO_AFRH_AFSEL10_Pos);	// for pin A-10 alternative funciton 2
-
+	
 	GPIOA->PUPDR |= (0x01 << GPIO_PUPDR_PUPDR11_Pos);	// pull-up for pin A-11 (overcurrent control)
 	
 	// GPIOB
 	
-	GPIOB->MODER |= (0x02 << GPIO_MODER_MODER0_Pos) |	// alternate function for pin B-0 (PWM channel 2, negative)
-		            (0x02 << GPIO_MODER_MODER1_Pos);	// alternate function for pin B-1 (PWM channel 3, negative)
+	GPIOB->MODER |= (0x02 << GPIO_MODER_MODER13_Pos) |	// alternate function for pin B-13 (PWM channel 1, negative)
+		            (0x02 << GPIO_MODER_MODER14_Pos) |	// alternate function for pin B-14 (PWM channel 2, negative)
+		            (0x02 << GPIO_MODER_MODER15_Pos);	// alternate function for pin B-15 (PWM channel 3, negative)
 	
-	GPIOB->OSPEEDR |= GPIO_OSPEEDR_OSPEEDR0 |			// high speed for pin B-0 (pwm channel 2, negative)
-		              GPIO_OSPEEDR_OSPEEDR1;			// high speed for pin B-1 (pwm channel 3, negative)
+	GPIOB->OSPEEDR |= GPIO_OSPEEDR_OSPEEDR13 |			// high speed for pin B-13 (pwm channel 1, negative)
+		              GPIO_OSPEEDR_OSPEEDR14 |			// high speed for pin B-14 (pwm channel 2, negative)
+		              GPIO_OSPEEDR_OSPEEDR15;			// high speed for pin B-15 (pwm channel 3, negative)
 	
-	GPIOB->AFR[0] |= (0x02 << GPIO_AFRL_AFSEL0_Pos) |	// for pin B-0 alternative funciton 2
-	                 (0x02 << GPIO_AFRL_AFSEL1_Pos);	// for pin B-1 alternative funciton 2
+	GPIOB->AFR[1] |= (0x02 << GPIO_AFRH_AFSEL13_Pos) |	// for pin B-13 alternative funciton 2
+		             (0x02 << GPIO_AFRH_AFSEL14_Pos) |	// for pin B-14 alternative funciton 2
+	                 (0x02 << GPIO_AFRH_AFSEL15_Pos);	// for pin B-15 alternative funciton 2
 	
 	//
 	
@@ -142,9 +145,9 @@ void setPwmTorque() {
 	
 	// fir filter
 	
-	long sample = (long)a * 0x800;
-	firValue += (sample - firValue) / 0x80;
-	a = (int)((firValue + 0x400) / 0x800);
+	//long sample = (long)a * 0x800;
+	//firValue += (sample - firValue) / 0x80;
+	//a = (int)((firValue + 0x400) / 0x800);
 	
 	//
 	

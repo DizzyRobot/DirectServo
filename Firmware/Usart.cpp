@@ -205,7 +205,7 @@ void processUsartCommand(){
 					usartTorqueCommandValue &= ~0x80;					
 					usartTorqueCommandValue = -usartTorqueCommandValue;
 				}
-				usartTorqueCommandValue *= 32;	// fit +-128 into +-4K as required by SIN
+				usartTorqueCommandValue *= 64;	// fit +-128 into +-8K as required by SIN
 				usartDmaSendRequested = true;		
 				success = true;
 			}				
