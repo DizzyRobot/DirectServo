@@ -165,6 +165,11 @@ bool readByte(uint8_t* output) {
 	*output = (b1 << 4) | b2;
 	return true;
 }
+void readChar(char* output){
+	*output = *inp;
+	inp++;
+	if (inp > recvBufferEnd) inp = (char*)recvBuffer;	
+}
 bool writeByte(uint8_t byte) {
 	uint8_t b1 = (byte >> 4) & 0x0F;
 	uint8_t b2 = byte & 0x0F;
@@ -175,9 +180,28 @@ bool writeByte(uint8_t byte) {
 	if (b2 <= 9) *outp++ = '0' + b2;
 	else *outp++ = '7' + b2;	
 }
+bool processTorque(){
+	char sign;
+	uint8_t value;
+	
+	readChar(&sign);
+	if (!readByte(&value)) return false;
+	
+	if (sign == '-')
+	{
+		usartTorqueCommandValue = -(int)value * 32; // fit 256 into +-8K as required by SIN		
+	}
+	else if (sign == '+')
+	{
+		usartTorqueCommandValue = (int)value * 32;
+	}
+	else return false;
+	
+	return true;	
+}
 void processUsartCommand(){
 	uint8_t b1, b2, b3, b4;
-	bool success = false;
+	bool success = true;
 	
 	// skip noice. todo: why!?
 	if (*inp >= '0' && *inp <= '9' || *inp >= 'A' && *inp <= 'F' || *inp >= 'a' && *inp <= 'f') {}
@@ -191,26 +215,36 @@ void processUsartCommand(){
 	{
 		// message addressed to this controller
 		
-		if (readByte(&b2) && b2 == 1)
+		char cmd;
+		while (true)
 		{
-			// command is TORQUE
-				
-			if (readByte(&b3))
+			readChar(&cmd);
+			
+			switch (cmd)
 			{
-				// successfully read command value
-
-				usartTorqueCommandValue = (int)b3;
-				if (usartTorqueCommandValue & 0x80)
+			case '\r':
+			case '\n': goto _done;
+				
+			case 'T': if (!processTorque())
 				{
-					usartTorqueCommandValue &= ~0x80;					
-					usartTorqueCommandValue = -usartTorqueCommandValue;
+					success = false;
+					goto _done;
 				}
-				usartTorqueCommandValue *= 64;	// fit +-128 into +-8K as required by SIN
-				usartDmaSendRequested = true;		
-				success = true;
-			}				
+				break;
+				
+			case 'a':
+				usartDmaSendRequested = true;
+				break;
+				
+			default:
+				{
+					success = false;
+					goto _done;
+				}				
+			}
 		}
 		
+_done:
 		if (!success) usartSendError();
 	}
 	else
