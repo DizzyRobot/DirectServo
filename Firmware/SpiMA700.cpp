@@ -1,12 +1,8 @@
 #include <main.h>
 
+int spiPrevSensor = 0;
 int spiCurrentAngle = 0;
-int spiUpdateSequence = 0;
-
-// FIR filter
-
 long firValue = 0;
-
 
 extern "C"
 void SPI1_IRQHandler() {
@@ -81,14 +77,18 @@ void initSpi() {
 
 int spiReadAngle() {
 	uint16_t data = SpiWriteRead(0xffff);
+	//return data;
 	return data >> 1;									// leave 15 bit as required by sin
 }
 void spiReadAngleFiltered() {
-		// fir filter
+	int currSensor = spiReadAngle();
+	int a = currSensor;
+	if (a - spiPrevSensor > 16384) a -= 32786;
+	else if (a - spiPrevSensor < -16384) a += 32786;
 	
-	//long sample = (long)a * 0x800;
-	//firValue += (sample - firValue) / 0x80;
-	//a = (int)((firValue + 0x400) / 0x800);
+	spiPrevSensor = currSensor;
 	
-	//
+	long sample = (long)a * 0x800;
+	firValue += (sample - firValue) / 0x80;
+	spiCurrentAngle = (int)((firValue + 0x400) / 0x800);
 }
