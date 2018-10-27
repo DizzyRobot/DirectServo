@@ -5,7 +5,7 @@
 #define MAIN_H
 
 const unsigned int flashPageAddress = 0x08007800;
-const int numQuadrants = 16;
+const int numQuadrants = 32;
 
 struct QuadrantData
 {
