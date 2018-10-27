@@ -1,5 +1,7 @@
 #include <main.h>
 
+const uint8_t mainboardId = 0x00;
+const uint8_t broadcastId = 0xFF;
 const uint sendBufferSize = 10;
 volatile unsigned char sendBuffer[sendBufferSize] = { 0 };
 
@@ -134,9 +136,20 @@ void usartSendError(){
 	sendBuffer[2] = 'r';
 	sendBuffer[3] = 'o';
 	sendBuffer[4] = 'r';
-	sendBuffer[5] = '\n';
+	sendBuffer[5] = '\r';
+	sendBuffer[6] = '\n';
 
-	DMA1_Channel2->CNDTR = 6;									// buffer size	
+	DMA1_Channel2->CNDTR = 7;									// buffer size	
+	DMA1_Channel2->CCR |= DMA_CCR_EN;							// enable DMA channel 2
+	usartDmaSendBusy = true;	
+}
+void usartSendOk() {
+	sendBuffer[0] = 'O';
+	sendBuffer[1] = 'K';
+	sendBuffer[2] = '\r';
+	sendBuffer[3] = '\n';
+
+	DMA1_Channel2->CNDTR = 4;									// buffer size	
 	DMA1_Channel2->CCR |= DMA_CCR_EN;							// enable DMA channel 2
 	usartDmaSendBusy = true;	
 }
@@ -180,6 +193,7 @@ bool writeByte(uint8_t byte) {
 	if (b2 <= 9) *outp++ = '0' + b2;
 	else *outp++ = '7' + b2;	
 }
+
 bool processTorque(){
 	char sign;
 	uint8_t value;
@@ -199,6 +213,28 @@ bool processTorque(){
 	
 	return true;	
 }
+bool processIdentity() {
+	char sign;
+	uint8_t value;
+	
+	if (!readByte(&value)) return false;
+	if (value == mainboardId || value == broadcastId) return false;
+	
+	ConfigData lc;
+	memcpy(&lc, config, sizeof(ConfigData));
+	lc.controllerId = value;
+	
+	writeFlash((uint16_t*)&lc, sizeof(ConfigData) / sizeof(uint16_t));
+	blinkId(false);
+	
+	return true;	
+}
+bool processCalibrate(){
+	calibrate();
+	blinkCalib(false);
+	return true;
+}
+
 void processUsartCommand(){
 	uint8_t b1, b2, b3, b4;
 	bool success = true;
@@ -211,7 +247,7 @@ void processUsartCommand(){
 		if (inp > recvBufferEnd) inp = (char*)recvBuffer;
 	}
 	
-	if (readByte(&b1) && b1 == config->controllerId)
+	if (readByte(&b1) && (b1 == config->controllerId || b1 == broadcastId))
 	{
 		// message addressed to this controller
 		
@@ -231,6 +267,20 @@ void processUsartCommand(){
 					goto _done;
 				}
 				break;
+
+			case 'I': if (!processIdentity())
+				{
+					success = false;
+					goto _done;
+				}
+				break;
+				
+			case 'C': if (!processCalibrate())
+				{
+					success = false;
+					goto _done;
+				}
+				break;
 				
 			case 'a':
 				usartDmaSendRequested = true;
@@ -245,7 +295,10 @@ void processUsartCommand(){
 		}
 		
 _done:
-		if (!success) usartSendError();
+		if (success) {
+			if (!usartDmaSendRequested) usartSendOk();
+		}
+		else usartSendError();
 	}
 	else
 	{
@@ -262,7 +315,7 @@ void usartSendAngle() {
 	writeByte(config->controllerId);							// id of the sender	
 	writeByte((uint8_t)((spiCurrentAngle >> 8) & (uint8_t)0x00FFU));
 	writeByte((uint8_t)(spiCurrentAngle & (uint8_t)0x00FFU));
-	//*outp++ = '\r';
+	*outp++ = '\r';
 	*outp++ = '\n';
 	
 	uint32_t cnt = outp - (char*)sendBuffer;

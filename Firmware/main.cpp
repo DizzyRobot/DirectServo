@@ -6,27 +6,6 @@ int ensureConfigured() {
 	
 	if (!calibConfigured) blinkCalib(true);
 	if (!idConfigured) blinkId(true);
-	
-	while (!calibConfigured || !idConfigured)
-	{
-		if (buttonCalibPressed)
-		{
-			calibrate();
-			blinkCalib(false);
-			
-			calibConfigured = true;
-			buttonCalibPressed = false;
-		}
-		
-		if (buttonIdPressed)
-		{
-			incrementIdAndSave();
-			blinkId(false);
-			
-			idConfigured = true;
-			buttonIdPressed = false;
-		}		
-	}
 }
 
 //
@@ -44,7 +23,6 @@ int main(void) {
 	delay(2000);
 	
 	ensureConfigured();
-	//A1335InitFromFlash();
 	
 	//usartTorqueCommandValue = -250;	
 	
@@ -53,8 +31,7 @@ int main(void) {
 	buttonCalibPressed = false;
 
 	while (true){
-		//spiUpdateTorque();
-		spiCurrentAngle = spiReadAngle();
+		spiReadAngleFiltered();
 		setPwmTorque();
 		
 		if (usartDmaSendRequested && !usartDmaSendBusy)

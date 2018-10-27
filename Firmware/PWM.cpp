@@ -6,10 +6,6 @@ const int phase2 = sin_period / 3;
 const int phase3 = sin_period * 2 / 3;
 const int ninetyDeg = sin_period / 4;
 
-// FIR filter
-
-long firValue = 0;
-
 /// A sine approximation via a third-order approx.
 /// @param x    Angle (with 2^15 units/circle)
 /// @return     Sine value (Q12)
@@ -142,14 +138,6 @@ void setPwm(int angle, int power) {
 }
 void setPwmTorque() {
 	int a = getElectricDegrees();
-	
-	// fir filter
-	
-	//long sample = (long)a * 0x800;
-	//firValue += (sample - firValue) / 0x80;
-	//a = (int)((firValue + 0x400) / 0x800);
-	
-	//
 	
 	if (usartTorqueCommandValue > 0)
 	{

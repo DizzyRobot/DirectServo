@@ -67,7 +67,7 @@ extern int spiCurrentAngle;
 
 void initSpi();
 int spiReadAngle();
-
+void spiReadAngleFiltered();
 
 // usart ----------------------------------------------------------------------
 
