@@ -4,6 +4,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define POSITIVE_MODULO(A, B)	((A % B + B) %B)
+
 const unsigned int flashPageAddress = 0x08007800;
 const int numQuadrants = 32;
 

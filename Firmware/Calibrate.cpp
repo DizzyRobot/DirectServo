@@ -2,7 +2,7 @@
 
 extern const int maxPoles;
 
-const int calibPower = sin_range;
+const int calibPower = sin_range/2;
 const int quadrantDiv = SENSOR_MAX / numQuadrants;
 	
 ConfigData* config = (ConfigData*)flashPageAddress;
@@ -10,8 +10,11 @@ ConfigData* config = (ConfigData*)flashPageAddress;
 int currentPole = 0;
 
 int getElectricDegrees() {
+	int angle = spiCurrentAngle % sin_period;
+	if (angle < 0) angle += sin_period;
+	
 	int a;
-	int q = spiCurrentAngle / quadrantDiv;
+	int q = angle / quadrantDiv;
 	int range = config->quadrants[q].range;
 	int qstart;
 	
@@ -19,13 +22,13 @@ int getElectricDegrees() {
 	{
 		int min = config->quadrants[q].minAngle;
 		qstart = q * quadrantDiv;
-		a = min + (spiCurrentAngle - qstart) * range / quadrantDiv;
+		a = min + (angle - qstart) * range / quadrantDiv;
 	}
 	else
 	{
 		int max = config->quadrants[q].maxAngle;
 		qstart = q * quadrantDiv;
-		a = max - (spiCurrentAngle - qstart) * range / quadrantDiv;
+		a = max - (angle - qstart) * range / quadrantDiv;
 	}
 	
 	return a;
@@ -258,11 +261,17 @@ void calibrate() {
 	
 	// calc average quadrants
 	
+	int minRange;
+	int maxRange;
 	for (int i = 0; i < numQuadrants; i++)
 	{
 		lc.quadrants[i].minAngle = (qUp[i].minAngle + qDn[i].minAngle) / 2;
 		lc.quadrants[i].maxAngle = (qUp[i].maxAngle + qDn[i].maxAngle) / 2;
-		lc.quadrants[i].range = lc.quadrants[i].maxAngle - lc.quadrants[i].minAngle;
+		int range = lc.quadrants[i].maxAngle - lc.quadrants[i].minAngle;
+		lc.quadrants[i].range = range;
+		
+		if (i == 0 || minRange > range) minRange = range;
+		if (i == 0 || maxRange < range) maxRange = range;
 	}
 	
 	// store in flash

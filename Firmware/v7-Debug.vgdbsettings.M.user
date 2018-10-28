@@ -11,7 +11,16 @@
       <Vfork>false</Vfork>
       <Syscalls />
     </CatchpointConfiguration>
-    <LiveWatches />
+    <LiveWatches>
+      <LiveWatch>
+        <Expression>spiCurrentAngle</Expression>
+        <Settings xsi:type="GraphVisualWatchSettings">
+          <Type>SInt32</Type>
+          <ElementCount>1</ElementCount>
+        </Settings>
+        <VisualizerID>com.sysprogs.visualwatch.graph</VisualizerID>
+      </LiveWatch>
+    </LiveWatches>
     <MemoryWindowPreferences />
     <FavoriteEmbeddedRegisters>
       <string>USART1</string>
@@ -23,6 +32,17 @@
     <LiveVariables>
       <LiveVariable>
         <Expression>spiCurrentAngle</Expression>
+        <Type>SInt32</Type>
+        <Enabled>true</Enabled>
+        <Breakpoint>
+          <ComparisonMode>Equals</ComparisonMode>
+          <Enabled>false</Enabled>
+        </Breakpoint>
+        <Plot>true</Plot>
+        <IsCollapsed>false</IsCollapsed>
+      </LiveVariable>
+      <LiveVariable>
+        <Expression>spiCorrection</Expression>
         <Type>SInt32</Type>
         <Enabled>true</Enabled>
         <Breakpoint>
