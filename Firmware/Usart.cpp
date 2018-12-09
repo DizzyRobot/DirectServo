@@ -161,7 +161,7 @@ bool readByte(uint8_t* output) {
 	
 	if (*inp >= '0' && *inp <= '9') b1 = *inp - '0';
 	else if (*inp >= 'A' && *inp <= 'F') b1 = *inp - '7';
-	else if (*inp >= 'a' && *inp <= 'f') b1 = *inp - 'a';
+	else if (*inp >= 'a' && *inp <= 'f') b1 = *inp - 'W';
 	else return false;
 	
 	inp++;
@@ -169,7 +169,7 @@ bool readByte(uint8_t* output) {
 		
 	if (*inp >= '0' && *inp <= '9') b2 = *inp - '0';
 	else if (*inp >= 'A' && *inp <= 'F') b2 = *inp - '7';
-	else if (*inp >= 'a' && *inp <= 'f') b2 = *inp - 'a';
+	else if (*inp >= 'a' && *inp <= 'f') b2 = *inp - 'W';
 	else return false;
 	
 	inp++;
