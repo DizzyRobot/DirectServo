@@ -1,14 +1,24 @@
-#include <main.h>
+#include "main.h"
 
-int ensureConfigured() {
-	bool calibConfigured = config->calibrated;
+bool FailsafeCalibrated = false;
+
+void ensureConfigured() {
+	FailsafeCalibrated = config->Failsafe.TorqueLimit == TorqueLimitMax;
+	bool calibConfigured = config->calibrated && FailsafeCalibrated;
 	bool idConfigured = config->controllerId != 0 && config->controllerId != -1;
-	
-	if (!calibConfigured) blinkCalib(true);
-	if (!idConfigured) blinkId(true);
+
+	if (!calibConfigured)
+		blinkCalib(true);
+	if (!idConfigured)
+		blinkId(true);
 }
 
-//
+void ResetFlash()
+{
+	ConfigData DefaultConfig;
+	writeFlash((uint16_t*)&DefaultConfig, sizeof(ConfigData) / sizeof(uint16_t));
+	ensureConfigured();
+}
 
 int main(void) {
 	initClockExternal();
@@ -16,48 +26,38 @@ int main(void) {
 	initUsart();
 	initSpi();
 	initSysTick();
-	//delay(100);
 	initPwm();
-	
-	//calibrate();
-	delay(2000);
-	
+
+	const bool HartResetFlash = false; // this is here in case commands are broken and a hard reset is needed through re-programming
+	if (HartResetFlash)
+		ResetFlash();
+
 	ensureConfigured();
-	
-	//usartTorqueCommandValue = -250;	
-	
-	usartDmaSendRequested = false;
+
 	buttonIdPressed = false;
 	buttonCalibPressed = false;
 
-	while (true){
+	while (true) {
 		spiReadAngleFiltered();
 		setPwmTorque();
-		
-		if (usartDmaSendRequested && !usartDmaSendBusy)
-		{
-			usartSendAngle();
-			usartDmaSendRequested = false;
-		}
-		
+
 		if (usartCommandReceived)
 		{
 			processUsartCommand();
 			usartCommandReceived = false;
 		}
-		
+
 		if (buttonIdPressed)
 		{
 			incrementIdAndSave();
 			buttonIdPressed = false;
 		}
-		
+
 		if (buttonCalibPressed)
 		{
-			calibrate(); 
+			calibrate();
 			buttonCalibPressed = false;
-			usartTorqueCommandValue = 0;
-			usartDmaSendRequested = false;
 		}
 	}
 }
+

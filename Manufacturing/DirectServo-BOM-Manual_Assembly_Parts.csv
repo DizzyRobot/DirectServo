@@ -1,0 +1,7 @@
+Index,Quantity,Part Number,Manufacturer Part Number,Description,Customer Reference,Footprint
+19,1,1276-6767-1-ND,CL31B106KBHNNNE,CAP CER 10UF 50V X7R 1206,low-esr capacitor for battery terminal,C_1206 (inches)
+20,1,any,any,diametrically magnetized magnet,Example: https://www.kjmagnetics.com/proddetail.asp?prod=D82DIA,
+21,1,any,any,"any 2-pin connector male+female pair, used for RS485 connection",Example: https://www.ebay.com/itm/JST-EH-2-5-2-Pin-Female-Connector-with-Wire-L-300mm-Male-Connector-x-10-Sets-/181431004416,
+22,1,XT30U,any,XT30U Male Female Bullet Connectors,https://www.amazon.com/Finware-Upgrade-Female-Connectors-Battery/dp/B074S7NH3H,
+23,1,any,any,"3 wire power connnectors, such as servo connectors",Example: https://www.amazon.com/WGCD-Servo-Connector-Female-Futaba/dp/B06XKBSPPF,
+24,1,any,any,wire for power (unnesseary if motor comes with extra),,
