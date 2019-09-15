@@ -177,8 +177,14 @@ class DirectServo():
 	def Reset(self,**kargs):
 		return self.Write(self.Cmd_Reset, Destination = self.ID,**kargs)
 	
+UserKillFunction = None
+def SetAdditionalKillFunction(NewFunct):
+	global UserKillFunction
+	UserKillFunction = NewFunct
+	
 #making sure all connected devices are left at zero torque if the user's program fails
 def KillMotors():
+	global UserKillFunction
 	try:
 		print("")
 		for port in PortMap.keys():
@@ -188,6 +194,13 @@ def KillMotors():
 		print("")
 	except Exception as e:
 		raise RuntimeError("Could not kill motors. Exception: ",e)
+	if not UserKillFunction is None:
+		try:
+			print("")
+			UserKillFunction()
+			print("")
+		except Exception as e:
+			raise RuntimeError("UserKillFunction() Exception: ",e)
 		
 def KillOnExit():
 	atexit.register(KillMotors)
