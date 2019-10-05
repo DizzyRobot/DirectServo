@@ -5,6 +5,8 @@ Tested in python 3.5 and 3.7
 '''
 import sys, serial, time, math, threading, queue, atexit
 
+GlobalKillSwitch = False
+
 # Static lifetime RS485 connections are stored in PortMap, which 
 # allows many DirectServo class instances to be bound to ports 
 # without clashing port connections
@@ -45,7 +47,6 @@ class DirectServo():
 		'search':0.4, # torque search magnitude [0.0 to 1.0]
 		'offset':10 # offset in degrees to failsafe > 0.0
 		}
-		
 	def _ReceivedThread(self):
 		while True:
 			if self.RS485.inWaiting():
@@ -58,9 +59,13 @@ class DirectServo():
 						Response = {"ID":ID, "Angle":Angle, "Code":"OK"}
 					else:
 						Response = {"ID":ID, "Angle":None,  "Code":Response[2:]}
+				except KeyboardInterrupt:
+					raise
 				except:
 					Response = {"ID":255, "Angle":None, "Code":Response}
 					print('Received unrecognized response: "{}"'.format(Response))
+					self.RS485.flushInput()
+					self.RS485.flushOutput()
 				if self.RxQueues.get(self.ID) is None:
 					self.RxQueues[self.ID] = queue.Queue()
 				ReceivedFromID = Response.get("ID",255)
@@ -99,12 +104,15 @@ class DirectServo():
 			respns = self.RxQueues[self.ID].get(True,ResonseTimeout)
 			if not respns is None:
 				return respns
-		except:
+		except queue.Empty:
 			pass
 		return {"ID":0xFF, "Angle":None, "Code":"No Response"}
 		
 	def Write(self, CommandTerm, Parameter = '', Destination = Broadcast, ResonseTimeout = 0.2, OverrideSend = None):
+		global GlobalKillSwitch
 		if CommandTerm == self.Cmd_Torque:
+			if GlobalKillSwitch and not (Parameter == 0 or Parameter == 0.0):
+				return {"ID":0xFF, "Angle":None, "Code":"Disallowed cmd during killed"}
 			if Parameter<0:
 				Parameter = '-'+self.Dec2HexByte(Parameter)
 			else:
@@ -171,8 +179,9 @@ class DirectServo():
 		
 	def SetFailsafe(self, failsafe = FailsafeDefaults['failsafe'],
 					search = FailsafeDefaults['search'],
-					offset = FailsafeDefaults['offset'],**kargs):
-		return self.Write(self.Cmd_Failsafe, {'failsafe':failsafe,'search':search,'offset':offset}, self.ID, ResonseTimeout = 20.0,**kargs)
+					offset = FailsafeDefaults['offset'],
+					ResonseTimeout = 20.0,**kargs):
+		return self.Write(self.Cmd_Failsafe, {'failsafe':failsafe,'search':search,'offset':offset}, self.ID, ResonseTimeout = ResonseTimeout,**kargs)
 	
 	def Reset(self,**kargs):
 		return self.Write(self.Cmd_Reset, Destination = self.ID,**kargs)
@@ -182,25 +191,41 @@ def SetAdditionalKillFunction(NewFunct):
 	global UserKillFunction
 	UserKillFunction = NewFunct
 	
+def EnableMotors():
+	global GlobalKillSwitch
+	GlobalKillSwitch = False
+	
 #making sure all connected devices are left at zero torque if the user's program fails
-def KillMotors():
+def KillMotors(Motors=None,Notify = False):
+	global GlobalKillSwitch
+	GlobalKillSwitch = True
+	response = ''
+	if Motors is None:
+		try:
+			for port in PortMap.keys():
+				BroadcastViaPort = DirectServo(Port = port)
+				BroadcastViaPort.Torque(0)
+				if Notify:
+					response += "\nKilled all motors on Port {}.".format(port)
+		except Exception as e:
+			raise RuntimeError("Could not kill motors. Exception: ",e)
+	else:
+		for mtr in Motors:
+			mtr.Torque(0)
+		if Notify:
+			response += "\nKilled motors."
+	return response
+
+def KillAndNotify():
 	global UserKillFunction
-	try:
-		print("")
-		for port in PortMap.keys():
-			BroadcastViaPort = DirectServo(Port = port)
-			BroadcastViaPort.Torque(0)
-			print("Killed all motors on Port {}.".format(port))
-		print("")
-	except Exception as e:
-		raise RuntimeError("Could not kill motors. Exception: ",e)
+	print("")
+	print(KillMotors(None,True))
 	if not UserKillFunction is None:
 		try:
-			print("")
 			UserKillFunction()
-			print("")
+			print("Executed UserKillFunction()")
 		except Exception as e:
 			raise RuntimeError("UserKillFunction() Exception: ",e)
-		
+	
 def KillOnExit():
-	atexit.register(KillMotors)
+	atexit.register(KillAndNotify)
