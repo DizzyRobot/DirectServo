@@ -1,0 +1,16 @@
+Size: 45x45mm
+Layers: 2 layers
+Material: FR-4
+FR4-TG: TG 130-140
+Thickness: 1.0
+Min Track/Spacing: 5/5mil
+Min Hole Size: 0.25mm
+Solder Mask: Red
+Silkscreen: None
+Gold fingers: No
+Surface Finish: HASL (either leaded or unleaded)
+Via Process: Determined by gerber files
+Finished Copper: 1 oz Cu
+Number of Unique Parts: 18
+Number of SMT Parts: 37
+Number of Through-Hole Parts: 0

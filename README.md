@@ -8,3 +8,6 @@ BLDC motor (such as a camera gimbal) and control it via RS485 protocol.
 It receives torque commands and sends back the angular position read via magnetic sensor.
 
 [https://www.dizzy.ai/documentation/motor-driver/]
+
+For a walk-through of manufacturing a DirectServo, programming it, and testing it, see:
+/Manufacturing/README.md
