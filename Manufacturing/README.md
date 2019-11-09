@@ -15,14 +15,14 @@ After receiving the boards, solder on the manually assembled parts (according to
 
 ---
 #### 4) Programing.
-It's suggested a ST-LINK-V2-ISOL is used, along with a ARM-JTAG-20-10 Micro JTAG adapter.
+It's suggested a ST-LINK-V2-ISOL is used, along with a ARM-JTAG-20-10 Micro JTAG adapter (make sure to install the usb drivers).
 * https://www.digikey.com/product-detail/en/stmicroelectronics/ST-LINK-V2-ISOL/497-15961-ND/4357213
 * https://www.amazon.com/PACK-ARM-JTAG-20-10-Micro-JTAG-adapter/dp/B010ATK9OC
 
 You can use your preferred development environment to compile the code-base.
 >**For eclipse:**
->1. Configure eclipse for C/C++
->2. Install the "STM32 - Bare Machine edition" plugin.
+>1. Install eclipse for C/C++
+>2. Install the "System Workbench for STM32" plugin using eclipse's plugin manager with the setting: "System Workbench for STM32 - Bare Machine edition" - http://ac6-tools.com/Eclipse-updates/org.openstm32.system-workbench.update-site-v2
 >3. Create a "Ac6 STM32 MCU GCC" project.
 >4. Select the STM32F031C6Tx MCU
 >5. Select the bare bones "Cube HAL" Hardware Abstraction Layer

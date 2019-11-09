@@ -1,4 +1,4 @@
-**/temp
-**/logs
 *.pdf
-**/__pycache__
+*/temp
+*/logs
+*/__pycache__
